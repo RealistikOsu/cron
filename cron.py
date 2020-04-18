@@ -83,11 +83,11 @@ def calculateRanks(): # Calculate hanayo ranks based off db pp values.
                 if daysInactive > 60:
                     continue
 
-                r.zadd(f'ripple:leaderboard{"_relax" if relax}:{gamemode}', userID, pp)
+                r.zadd(f'ripple:leaderboard{"_relax" if relax else ""}:{gamemode}', userID, pp)
 
                 if country != 'xx':
                     r.zincrby('hanayo:country_list', country, 1)
-                    r.zadd(f'ripple:leaderboard{"_relax" if relax}:{gamemode}:{country}', userID, pp)
+                    r.zadd(f'ripple:leaderboard{"_relax" if relax else ""}:{gamemode}:{country}', userID, pp)
 
     #dont mind me copy pasting and not putting it in the for loop
     print(f'Calculating Autopilot.')
