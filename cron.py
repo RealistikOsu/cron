@@ -64,7 +64,7 @@ def calculateRanks(): # Calculate hanayo ranks based off db pp values.
     # do not flush as it'll break "Online Users" on hanayo.
     # r.flushall() # Flush current set (removes restricted players).
     r.delete(r.keys("ripple:leaderboard:*"))
-    r.delete(r.keys("ripple:relaxboard:*"))
+    r.delete(r.keys("ripple:leaderboard_relax:*"))
 
     for relax in range(2):
         print(f'Calculating {"Relax" if relax else "Vanilla"}.')
@@ -83,11 +83,34 @@ def calculateRanks(): # Calculate hanayo ranks based off db pp values.
                 if daysInactive > 60:
                     continue
 
-                r.zadd(f'ripple:{"relax" if relax else "leader"}board:{gamemode}', userID, pp)
+                r.zadd(f'ripple:leaderboard{"_relax" if relax}:{gamemode}', userID, pp)
 
                 if country != 'xx':
                     r.zincrby('hanayo:country_list', country, 1)
-                    r.zadd(f'ripple:{"relax" if relax else "leader"}board:{gamemode}:{country}', userID, pp)
+                    r.zadd(f'ripple:leaderboard{"_relax" if relax}:{gamemode}:{country}', userID, pp)
+
+    #dont mind me copy pasting and not putting it in the for loop
+    print(f'Calculating Autopilot.')
+    for gamemode in ['std', 'taiko', 'ctb', 'mania']:
+        print(f'Mode: {gamemode}')
+
+        SQL.execute('SELECT ap_stats.id, ap_stats.pp_{gm}, ap_stats.country, users.latest_activity FROM ap_stats LEFT JOIN users ON users.id = ap_stats.id WHERE ap_stats.pp_{gm} > 0 AND users.privileges & 1 ORDER BY pp_{gm} DESC'.format(gm=gamemode))
+
+        currentTime = int(time.time())
+        for row in SQL.fetchall():
+            userID       = int(row[0])
+            pp           = float(row[1])
+            country      = row[2].lower()
+            daysInactive = (currentTime - int(row[3])) / 60 / 60 / 24
+            
+            if daysInactive > 60:
+                continue
+
+            r.zadd(f'ripple:leaderboard_ap:{gamemode}', userID, pp)
+
+            if country != 'xx':
+                r.zincrby('hanayo:country_list', country, 1)
+                r.zadd(f'ripple:leaderboard_ap:{gamemode}:{country}', userID, pp)
 
     print(f'{GREEN}-> Successfully completed rank calculations.\n{MAGENTA}Time: {time.time() - t_start:.2f} seconds.{ENDC}')
     return True
