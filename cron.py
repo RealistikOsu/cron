@@ -5,6 +5,7 @@ import time
 import requests
 import os
 import sys
+import math
 
 # Akatsuki-cron-py version number.
 VERSION = "0.1.0" #new version thing because i find it cooler
@@ -237,12 +238,19 @@ def AutopilotLeaderboardRecalc():
             TotalUserPPs[Score[0]] = []
         TotalUserPPs[Score[0]].append(Score[1]) # here we dont have to care about the gamemode, we have no AP ctb or ap taiko
 
+    UserScoreCount = {}
+
     for User in list(TotalUserPPs.keys()):
+        #this is for pp weighing
+        if User not in list(UserScoreCount.keys()):
+            UserScoreCount[User] = 0
         #now we add them up and set them
         TotalPP = 0
         for ThePPValueForTheCurrentPlayThatIsBeingCurrentlyAdded in TotalUserPPs[User]:
+            ThePPValueForTheCurrentPlayThatIsBeingCurrentlyAdded = round(ThePPValueForTheCurrentPlayThatIsBeingCurrentlyAdded * math.pow(0.95, UserScoreCount[User]))
             TotalPP += ThePPValueForTheCurrentPlayThatIsBeingCurrentlyAdded
         SQL.execute("UPDATE ap_stats SET pp_std = %s WHERE id = %s", (TotalPP, User))
+        UserScoreCount[User] += 1
 
     return True
 
