@@ -247,10 +247,10 @@ def AutopilotLeaderboardRecalc():
         #now we add them up and set them
         TotalPP = 0
         for ThePPValueForTheCurrentPlayThatIsBeingCurrentlyAdded in TotalUserPPs[User]:
-            ThePPValueForTheCurrentPlayThatIsBeingCurrentlyAdded = round(ThePPValueForTheCurrentPlayThatIsBeingCurrentlyAdded * math.pow(0.95, UserScoreCount[User]))
-            TotalPP += ThePPValueForTheCurrentPlayThatIsBeingCurrentlyAdded
+            WeighedPP = round(ThePPValueForTheCurrentPlayThatIsBeingCurrentlyAdded * math.pow(0.95, UserScoreCount[User]))
+            TotalPP += WeighedPP
+            UserScoreCount[User] += 1
         SQL.execute("UPDATE ap_stats SET pp_std = %s WHERE id = %s", (TotalPP, User))
-        UserScoreCount[User] += 1
 
     return True
 
