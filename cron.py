@@ -231,24 +231,18 @@ def AutopilotLeaderboardRecalc():
     SQL.execute("SELECT scores_ap.userid, pp, scores_ap.play_mode FROM scores_ap INNER JOIN users ON users.id=scores_ap.userid JOIN beatmaps USING(beatmap_md5) WHERE completed = 3 AND ranked >= 2 AND pp IS NOT NULL ORDER BY pp DESC")
     AutopilotScores = SQL.fetchall()
     TotalUserPPs = {}
-    print(AutopilotScores)
 
     for Score in AutopilotScores:
         if Score[0] not in list(TotalUserPPs.keys()):
             TotalUserPPs[Score[0]] = []
         TotalUserPPs[Score[0]].append(Score[1]) # here we dont have to care about the gamemode, we have no AP ctb or ap taiko
-    
-    print(TotalUserPPs)
 
     for User in list(TotalUserPPs.keys()):
         #now we add them up and set them
         TotalPP = 0
         for ThePPValueForTheCurrentPlayThatIsBeingCurrentlyAdded in TotalUserPPs[User]:
-            print(f"Adding {ThePPValueForTheCurrentPlayThatIsBeingCurrentlyAdded} to {TotalPP} = ",end="")
             TotalPP += ThePPValueForTheCurrentPlayThatIsBeingCurrentlyAdded
-            print(TotalPP)
-        print(f"{User} : {ThePPValueForTheCurrentPlayThatIsBeingCurrentlyAdded}")
-        #SQL.execute("UPDATE ap_stats SET pp_std = %s WHERE id = %s", (ThePPValueForTheCurrentPlayThatIsBeingCurrentlyAdded, User))
+        SQL.execute("UPDATE ap_stats SET pp_std = %s WHERE id = %s", (TotalPP, User))
 
     return True
 
