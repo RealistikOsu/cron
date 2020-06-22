@@ -244,14 +244,16 @@ def AutopilotLeaderboardRecalc():
         #now we add them up and set them
         TotalPP = 0
         for ThePPValueForTheCurrentPlayThatIsBeingCurrentlyAdded in TotalUserPPs[User]:
+            print(f"Adding {ThePPValueForTheCurrentPlayThatIsBeingCurrentlyAdded} to {TotalPP} = ",end="")
             TotalPP += ThePPValueForTheCurrentPlayThatIsBeingCurrentlyAdded
+            print(TotalPP)
         print(f"{User} : {ThePPValueForTheCurrentPlayThatIsBeingCurrentlyAdded}")
         #SQL.execute("UPDATE ap_stats SET pp_std = %s WHERE id = %s", (ThePPValueForTheCurrentPlayThatIsBeingCurrentlyAdded, User))
 
     return True
 
 if __name__ == '__main__':
-    print(f"{CYAN}Akatsuki's cron - v{VERSION}.{ENDC}")
+    print(f"{CYAN}Akatsuki's cron - {VERSION}.{ENDC}")
     intensive = len(sys.argv) > 1 and any(sys.argv[1].startswith(x) for x in ['t', 'y', '1'])
     t_start = time.time()
     # lol this is cursed code right here
