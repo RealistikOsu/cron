@@ -299,11 +299,12 @@ if __name__ == '__main__':
     intensive = len(sys.argv) > 1 and any(sys.argv[1].startswith(x) for x in ['t', 'y', '1'])
     t_start = time.time()
     # lol this is cursed code right here
-    #if AutopilotLeaderboardRecalc() : print()
     if calculateRanks(): print()
     if updateTotalScores(): print()
     if removeExpiredDonorTags(): print()
     if addSupporterBadges(): print()
+    if RestrictFrozenPast(): print()
     if intensive and calculateScorePlaycount(): print()
+    if intensive and AutopilotLeaderboardRecalc() : print()
 
     print(f'{GREEN}-> Cronjob execution completed.\n{MAGENTA}Time: {time.time() - t_start:.2f} seconds.{ENDC}')
