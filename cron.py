@@ -226,6 +226,7 @@ def calculateScorePlaycount():
 
 def AutopilotLeaderboardRecalc():
     """Recalculates the autopilot leaderboards."""
+    t_start = time.time()
     #ok cut me some slack this is done in a rush
     #also this is trivial to port for other gamemodes.
     print(f"{CYAN}-> Fetching Autopilot scores...")
@@ -252,6 +253,45 @@ def AutopilotLeaderboardRecalc():
             UserScoreCount[User] += 1
         SQL.execute("UPDATE ap_stats SET pp_std = %s WHERE id = %s", (TotalPP, User))
 
+    print(f'{GREEN}-> Successfully recalculated autopilot PP.\n{MAGENTA}Time: {time.time() - t_start:.2f} seconds.{ENDC}')
+    return True
+
+def RemoveFromLeaderboard(UserID: int):
+    """Removes the user from leaderboards.
+    
+    Taken from RealistikPanel by RealistikDash
+    """
+    Modes = ["std", "ctb", "mania", "taiko"]
+    for mode in Modes:
+        #redis for each mode
+        r.zrem(f"ripple:leaderboard:{mode}", UserID)
+        #removes from relax leaderboards
+        r.zrem(f"ripple:leaderboard_relax:{mode}", UserID)
+        r.zrem(f"ripple:leaderboard_ap:{mode}", UserID)
+
+        #removing from country leaderboards
+        SQL.execute("SELECT country FROM users_stats WHERE id = %s LIMIT 1", (UserID,))
+        Country = SQL.fetchone()[0]
+        if Country != "XX": #check if the country is not set
+            r.zrem(f"ripple:leaderboard:{mode}:{Country}", UserID)
+            r.zrem(f"ripple:leaderboard_relax:{mode}:{Country}", UserID)
+            r.zrem(f"ripple:leaderboard_ap:{mode}:{Country}", UserID)
+
+def RestrictFrozenPast(): #good name
+    """Restricts users who were frozen and their time has passed."""
+    t_start = time.time()
+    print(f"{CYAN}-> Restricting frozen people who weren't unfrozen.")
+    Timestamp = round(time.time())
+    SQL.execute("SELECT id FROM users WHERE privileges & 1 AND freezedate < %s AND frozen = 1", (Timestamp,))
+    People = SQL.fetchall()
+    if len(People) == 0:
+        print(f'{GREEN}-> No users restricted!\n{MAGENTA}Time: {time.time() - t_start:.2f} seconds.{ENDC}')
+        return True
+    SQL.execute("UPDATE users SET privileges = 2 WHERE privileges & 1 AND freezedate < %s AND frozen = 1", (Timestamp,))
+    #remove all from leaderboard
+    for User in People:
+        RemoveFromLeaderboard(User[0])
+    print(f'{GREEN}-> Successfully restricted and removed from leaderboard {People} users!.\n{MAGENTA}Time: {time.time() - t_start:.2f} seconds.{ENDC}')
     return True
 
 if __name__ == '__main__':
@@ -259,7 +299,7 @@ if __name__ == '__main__':
     intensive = len(sys.argv) > 1 and any(sys.argv[1].startswith(x) for x in ['t', 'y', '1'])
     t_start = time.time()
     # lol this is cursed code right here
-    if AutopilotLeaderboardRecalc() : print()
+    #if AutopilotLeaderboardRecalc() : print()
     if calculateRanks(): print()
     if updateTotalScores(): print()
     if removeExpiredDonorTags(): print()
