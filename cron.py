@@ -291,7 +291,7 @@ def RestrictFrozenPast(): #good name
     #remove all from leaderboard
     for User in People:
         RemoveFromLeaderboard(User[0])
-    print(f'{GREEN}-> Successfully restricted and removed from leaderboard {People} users!.\n{MAGENTA}Time: {time.time() - t_start:.2f} seconds.{ENDC}')
+    print(f'{GREEN}-> Successfully restricted and removed from leaderboard {len(People)} users!.\n{MAGENTA}Time: {time.time() - t_start:.2f} seconds.{ENDC}')
     return True
 
 if __name__ == '__main__':
