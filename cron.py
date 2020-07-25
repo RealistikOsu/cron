@@ -2,7 +2,6 @@ import redis
 import mysql.connector
 from mysql.connector import errorcode
 import time
-import requests
 import os
 import sys
 import math
